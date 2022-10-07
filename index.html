@@ -1,0 +1,225 @@
+=<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: rgb(0, 0, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  </style>
+</head>
+<body>
+<canvas width="1107" height="1107" id="game"></canvas>
+<script>
+
+
+var canvas = document.getElementById('game');
+var context = canvas.getContext('2d');
+
+
+
+var grid = 16;
+var count = 0;
+var w = false;
+var a = false;
+var s = false;
+var d = false;
+
+
+var Plr1 = {
+    x: 1107/2,
+    y: 1107/2,
+
+    xv: 0,
+    dir: 0,
+
+};
+
+var Draw2d = false;
+
+var fov = 360;
+
+let map = [
+  [1,1,1,1,1,1,1,1,1],
+  [1,0,1,0,0,0,0,0,1],
+  [1,0,1,0,0,0,0,0,1],
+  [1,0,1,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,1,1,0,1],
+  [1,0,0,0,0,1,1,0,1],
+  [1,0,1,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1],
+]
+
+function loop() {
+  requestAnimationFrame(loop);
+
+
+
+  count = 2;
+  if (count > 2) {
+    
+    return 0
+  }
+
+
+  if (d==true) {
+    Plr1.dir += .1;
+  }
+  else if (a==true) {
+    Plr1.dir -= .1;
+  }
+
+  if (w==true) {
+    Plr1.xv += 2;
+  }
+  else if (s==true) {
+    Plr1.xv -= 2;
+  }
+    Plr1.xv *= .875;
+    Plr1.yv *= .875;
+
+
+
+  Plr1.x += Math.sin(Plr1.dir) * Plr1.xv;
+
+  if(map[Math.floor(Plr1.y/123)][Math.floor(Plr1.x/123)] == 1){
+    Plr1.x -= Math.sin(Plr1.dir) * (Plr1.xv);
+  }
+
+  Plr1.y -= Math.cos(Plr1.dir) * Plr1.xv;
+  if(map[Math.floor(Plr1.y/123)][Math.floor(Plr1.x/123)] == 1){
+    Plr1.y += Math.cos(Plr1.dir) * (Plr1.xv);
+  }
+
+  context.clearRect(0,0,canvas.width,canvas.height);
+
+
+  //map rendering
+
+
+  for(let collumn=0;collumn<map.length;collumn++){
+    for(let row=0;row<9;row++){
+
+
+      if( map[collumn][row]==1){
+        context.fillStyle = 'red';
+      }
+      else{
+        context.fillStyle = 'grey';
+      }
+
+      if (Draw2d==true) {
+        context.fillRect(row*123,collumn*123, 120,120);                 
+      }                                                                                                                                                                                                                                                                                                                                                                                      
+    }
+  }
+
+  //map end
+
+
+
+  //raycasting
+
+  //x ray
+
+
+  for(let i = 0; i < fov; i ++){
+    var startx = Plr1.x
+    var starty = Plr1.y
+
+    var rayfinished = false;
+    context.fillStyle = 'white';
+    do {
+    
+      startx += (Math.cos((Plr1.dir+(i/100))-(Math.PI/2) - (fov/200)));
+      starty += (Math.sin((Plr1.dir+(i/100))-(Math.PI/2) - (fov/200)));
+
+      if (map[Math.floor(starty/123)][Math.floor(startx/123)] == 1){
+        rayfinished = true;
+
+        if (Draw2d==true) {
+          context.fillRect(Math.floor(startx),Math.floor(starty), 5,5);          
+        }   
+        var distance = (Math.abs(Plr1.x - Math.floor(startx))) + (Math.abs(Plr1.y - Math.floor(starty)))
+          context.fillStyle = `rgb(0, ${(Math.floor(100000/(distance))) - 120} , 0)`;
+          context.fillRect(i*12,(1107/2) - (16000/distance)*3,10,((16000/distance) * 6))
+
+
+      }
+    } 
+    while (rayfinished == false);
+  }
+
+  //raycasting end 
+
+
+
+
+
+
+  if(Draw2d==true) {
+    context.fillRect(Plr1.x, Plr1.y, 16,16);
+  }
+  context.fillRect(Plr1.x, Plr1.y, 16,16);
+  for (let i=0;i<14;i++){
+    if(Draw2d==true) {
+    context.fillRect(Plr1.x+(Math.sin(Plr1.dir)*(i*5))+8, Plr1.y-(Math.cos(Plr1.dir)*(i*5))+8, 5,5);
+    }
+  }
+}
+
+
+
+document.addEventListener('keydown', function(e) {
+
+
+if (e.which === 65 ) {
+  a=true
+}
+else if (e.which === 68 ) {
+  d=true
+}
+else if (e.which === 87 ) {
+  w=true
+}
+else if (e.which === 83 ) {
+  s=true
+}
+else if (e.which == 69) {
+    redshot=true
+  }
+
+});
+
+
+document.addEventListener('keyup', function(e) {
+if (e.which === 65 ) {
+  a=false
+}
+else if (e.which === 68 ) {
+  d=false
+}
+else if (e.which === 87 ) {
+  w=false
+}
+else if (e.which === 83 ) {
+  s=false
+}
+
+});
+
+
+// start the game
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
